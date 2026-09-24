@@ -1,37 +1,43 @@
-require("dotenv").config();
+require("dotenv").config(); // Nạp biến môi trường từ .env lên đầu tiên
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
+
+// Import các tuyến đường (Routes)
 const categoryRoutes = require("./routes/categoryRoutes");
 const productRoutes = require("./routes/productRoutes");
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-// 1. Kết nối CSDL MongoDB Atlas
+// Kết nối cơ sở dữ liệu MongoDB
 connectDB();
 
-// 2. Middleware
+// Middlewares
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// Bổ sung middleware phục vụ file giao diện HTML/CSS/JS trong thư mục public
-app.use(express.static("public"));
+// Khai báo các Routes API
+app.use("/api/categories", categoryRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/auth", authRoutes);
 
-// 3. Health Check
-app.get("/api/health", (req, res) => {
-  res.status(200).json({
-    status: "OK",
-    message: "Backend và MongoDB Atlas đang kết nối ổn định!",
+// Route kiểm tra trạng thái Server
+app.get("/", (req, res) => {
+  res.json({
+    message: "API E-commerce LHU Backend - Tuần 04 đang hoạt động bình thường!",
   });
 });
 
-// 4. Routes
-app.use("/api/categories", categoryRoutes);
-app.use("/api/products", productRoutes);
+// Middleware xử lý Route không tồn tại (404)
+app.use((req, res) => {
+  res
+    .status(404)
+    .json({ success: false, message: "Đường dẫn API không tồn tại!" });
+});
 
-// 5. Khởi chạy Server
+// Chạy Server
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server Tuần 02 đang chạy tại: http://localhost:${PORT}`);
+  console.log(`🚀 Server đang chạy tại: http://localhost:${PORT}`);
 });
